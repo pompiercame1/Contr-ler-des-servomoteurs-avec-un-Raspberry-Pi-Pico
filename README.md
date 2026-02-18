@@ -1,49 +1,49 @@
-# Contrôler 4 servomoteurs avec un Raspberry Pi Pico
+# Contrôle de 4 servomoteurs avec un Raspberry Pi Pico
 
-## 🎯 Objectif
-
-Faire bouger **quatre servomoteurs** à la suite (de 0° à 180°, puis retour à 0°), à l’aide d’un **:contentReference[oaicite:1]{index=1}** programmé dans l’**:contentReference[oaicite:2]{index=2}**.  
-Ce projet est idéal pour apprendre à manipuler le signal PWM et contrôler plusieurs moteurs.
-
----
-
-## 🧰 Matériel nécessaire
-
-- Un **Raspberry Pi Pico**
-- Quatre **servomoteurs** (SG90 ou MG90S)
-- Une **alimentation externe 5V** (piles, adaptateur, powerbank…)
-- Des **fils Dupont** (mâle-femelle)
-- Une **breadboard** (optionnelle, pour organiser les connexions)
-
-💡 **Important :** Les servos doivent être alimentés par une source **5V externe**.  
-Le Pico ne peut pas fournir assez de courant pour 4 moteurs.
+Ce projet montre comment contrôler quatre servomoteurs à l’aide d’un **Raspberry Pi Pico** programmé dans l’**Arduino IDE**.  
+Chaque servo va tourner de 0 à 180 degrés, puis revenir à 0, les uns après les autres.  
+C’est un bon exercice pour comprendre comment fonctionne le signal PWM et comment piloter plusieurs moteurs.
 
 ---
 
-## ⚙️ Branchement des servos
+## Matériel utilisé
 
-Chaque servo possède **3 fils** :
-- **Rouge** → 5V (alimentation)
-- **Marron ou noir** → GND (masse)
-- **Orange ou jaune** → signal de commande
+- Raspberry Pi Pico  
+- 4 servomoteurs  
+- Alimentation 5V externe (pour ne pas surcharger la carte)  
+- Fils Dupont  
+- Breadboard (facultative)
 
-Branche les signaux sur les broches **GP2, GP3, GP4 et GP5** du Pico.  
-Assure-toi que **toutes les masses (GND)** soient reliées entre elles :  
-celle du Pico, celle de ton alimentation externe et celles des servos.
-
----
-
-## 💻 Configuration de l’Arduino IDE
-
-1. Ouvre l’**Arduino IDE**.  
-2. Va dans **Outils → Type de carte → Gérer les cartes**.  
-3. Recherche : `Raspberry Pi RP2040 by Earle Philhower` et installe-le.  
-4. Sélectionne la carte **Raspberry Pi Pico**.  
-5. Branche le Pico en USB et sélectionne le bon **Port** dans le menu Outils.
+Les servos doivent être alimentés par une source 5V séparée.  
 
 ---
 
-## 🧩 Le code complet
+## Branchement
+
+Chaque servo a trois fils :  
+- rouge → 5V (alimentation externe)  
+- marron/noir → GND  
+- orange/jaune → signal
+
+Les signaux sont connectés aux broches GPIO suivantes du Pico :  
+- Servo 1 → GP2  
+- Servo 2 → GP3  
+- Servo 3 → GP4  
+- Servo 4 → GP5  
+
+---
+
+## Préparation de l’environnement
+
+1. Installe le support **Raspberry Pi RP2040** dans l’Arduino IDE (si non installé, voir https://github.com/earlephilhower/arduino-pico) :  
+   - Menu *Outils → Type de carte → Gérer les cartes*  
+   - Recherche “Raspberry Pi RP2040 by Earle Philhower” et installe-le  
+2. Sélectionne **Raspberry Pi Pico** comme carte  
+3. Branche le Pico et choisis le bon port dans *Outils → Port*
+
+---
+
+## Code Arduino
 
 ```cpp
 #include <Servo.h>
@@ -67,7 +67,7 @@ void loop() {
   for (int i = 0; i < 4; i++) {
     Serial.print("Servo ");
     Serial.print(i + 1);
-    Serial.println(" → de 0° à 180°");
+    Serial.println(" -> 0 à 180");
 
     for (int angle = 0; angle <= 180; angle += 5) {
       servos[i].write(angle);
@@ -77,7 +77,7 @@ void loop() {
 
     Serial.print("Servo ");
     Serial.print(i + 1);
-    Serial.println(" → de 180° à 0°");
+    Serial.println(" -> 180 à 0");
 
     for (int angle = 180; angle >= 0; angle -= 5) {
       servos[i].write(angle);
@@ -86,37 +86,20 @@ void loop() {
     delay(500);
   }
 }
-```
 
----
 
-## 🧠 Explication du code
+Explication rapide
 
-- `#include <Servo.h>` : charge la bibliothèque qui simplifie le contrôle des servos.  
-- `servo.attach(pin)` : lie chaque servo à une broche GPIO.  
-- `servo.write(angle)` : envoie un angle entre 0° et 180°.  
-- Les boucles `for` font bouger chaque servo progressivement.  
-- Les `delay()` ajoutent de petites pauses pour rendre le mouvement fluide.  
-- `Serial.print()` affiche les étapes dans le moniteur série.
+Le code utilise la bibliothèque Servo.h pour générer le signal PWM.
+Chaque servo est attaché à une broche différente du Pico (GPIO 2 à 5).
+La boucle for fait passer le servo de 0 à 180°, puis de 180 à 0°, avec un petit délai à chaque pas pour un mouvement fluide.
+Les messages envoyés sur le moniteur série permettent de suivre quel servo bouge.
 
----
+Résultat attendu
 
-## 🚀 Résultat
+Les quatre servos bougent à tour de rôle, chacun effectuant un aller-retour complet.
+Quand le dernier a fini, le programme recommence depuis le début.
 
-Chaque servo bouge à son tour de 0° à 180° puis revient à 0°.  
-Quand les quatre servos ont terminé, le programme recommence indéfiniment.
+Si les servos tremblent, c’est souvent à cause d’une alimentation insuffisante.
+Essaye avec une alimentation 5V plus stable ou plus puissante.
 
-💡 Si tes servos tremblent ou ne bougent pas bien, vérifie ton alimentation 5V et les masses communes.
-
----
-
-## 🧩 Aller plus loin
-
-Tu peux modifier ce code pour :
-- faire bouger **les 4 servos en même temps**,  
-- changer la vitesse (en réduisant `delay(20)`),  
-- ou inverser le sens de rotation d’un servo.
-
----
-✨ Auteur : *TonNom*  
-📅 Date : *février 2026*
